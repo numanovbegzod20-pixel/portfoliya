@@ -1107,54 +1107,62 @@ footer {
   <a href="#hero" class="footer-back" data-i18n="footer_top">↑ Tepaga</a>
 </footer>
 
-<!-- EMAILJS -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- FORMSPREE — hech qanday sozlash shart emas -->
 <script>
-// ═══════════════════════════════════════════════
-//  EMAILJS SOZLASH — faqat 3 qiymat to'ldiring
+// ══════════════════════════════════════════════════════════
+//  FORMSPREE — bekzoddev1@gmail.com ga xabar keladi
 //
-//  1. emailjs.com → Register (bepul)
-//  2. Email Services → Add Service → Gmail
-//     → Gmail hisobingiz bilan ulang
-//     → Service ID ni ko'chiring: "service_xxxxxx"
-//  3. Email Templates → Create Template
-//     Subject: Yangi xabar: {{subject}}
-//     Body:
-//       Kimdan: {{from_name}} ({{from_email}})
-//       Mavzu: {{subject}}
-//       Xabar: {{message}}
-//     To email: bekzoddev1@gmail.com
-//     → Template ID: "template_xxxxxx"
-//  4. Account → General → Public Key: "xxxxxxxxxx"
-// ═══════════════════════════════════════════════
-const EJ_PUB  = 'YOUR_PUBLIC_KEY';   // ← shu yerga
-const EJ_SVC  = 'YOUR_SERVICE_ID';   // ← shu yerga
-const EJ_TMPL = 'YOUR_TEMPLATE_ID';  // ← shu yerga
-emailjs.init({ publicKey: EJ_PUB });
+//  BIRINCHI MARTA faqat shu qilish kerak:
+//  1. formspree.io ga kiring → "Get Started Free"
+//  2. "New Form" → email: bekzoddev1@gmail.com
+//  3. Form endpoint olasiz: https://formspree.io/f/XXXXXXXX
+//  4. Quyidagi FORMSPREE_URL ga o'sha URL ni qo'ying
+// ══════════════════════════════════════════════════════════
+const FORMSPREE_URL = 'https://formspree.io/f/bekzoddev1@gmail.com';
 
-function sendMsg() {
+async function sendMsg() {
   const n = document.getElementById('cName').value.trim();
   const e = document.getElementById('cEmail').value.trim();
   const s = document.getElementById('cSubject').value.trim();
   const m = document.getElementById('cMsg').value.trim();
-  const st = document.getElementById('fStatus');
   const btn = document.getElementById('sendBtn');
+
   if (!n||!e||!s||!m) { showSt('error','⚠ Barcha maydonlarni to\'ldiring!'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { showSt('error','⚠ Email noto\'g\'ri!'); return; }
-  btn.disabled=true;
-  document.getElementById('btnTxt').style.display='none';
-  document.getElementById('btnLoad').style.display='inline';
-  emailjs.send(EJ_SVC, EJ_TMPL, { from_name:n, from_email:e, subject:s, message:m, to_email:'bekzoddev1@gmail.com', reply_to:e })
-    .then(()=>{ showSt('success','✓ Xabar yuborildi! Tez orada javob beraman.'); document.getElementById('cName').value=''; document.getElementById('cEmail').value=''; document.getElementById('cSubject').value=''; document.getElementById('cMsg').value=''; })
-    .catch(()=>showSt('error','✗ Xato yuz berdi. Qayta urinib ko\'ring.'))
-    .finally(()=>{ btn.disabled=false; document.getElementById('btnTxt').style.display='inline'; document.getElementById('btnLoad').style.display='none'; });
+
+  btn.disabled = true;
+  document.getElementById('btnTxt').style.display = 'none';
+  document.getElementById('btnLoad').style.display = 'inline';
+
+  try {
+    const res = await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ name: n, email: e, _replyto: e, subject: s, message: m })
+    });
+    if (res.ok) {
+      showSt('success','✓ Xabar yuborildi! Tez orada javob beraman.');
+      document.getElementById('cName').value = '';
+      document.getElementById('cEmail').value = '';
+      document.getElementById('cSubject').value = '';
+      document.getElementById('cMsg').value = '';
+    } else {
+      showSt('error','✗ Xato yuz berdi. Qayta urinib ko\'ring.');
+    }
+  } catch {
+    showSt('error','✗ Internet aloqasi yo\'q. Tekshirib ko\'ring.');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btnTxt').style.display = 'inline';
+    document.getElementById('btnLoad').style.display = 'none';
+  }
 }
+
 function showSt(type,txt) {
-  const el=document.getElementById('fStatus');
-  el.style.display='block';
-  el.style.cssText=`display:block;padding:.75rem 1rem;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.05em;border:1px solid ${type==='success'?'rgba(74,222,128,0.3)':'rgba(244,114,182,0.3)'};background:${type==='success'?'rgba(74,222,128,0.06)':'rgba(244,114,182,0.06)'};color:${type==='success'?'#4ade80':'#f472b6'};margin-top:.5rem`;
-  el.textContent=txt;
-  setTimeout(()=>el.style.display='none',6000);
+  const el = document.getElementById('fStatus');
+  el.style.cssText = `display:block;padding:.75rem 1rem;border-radius:4px;font-family:'Fira Code',monospace;font-size:.72rem;letter-spacing:.05em;border:1px solid ${type==='success'?'rgba(74,222,128,0.3)':'rgba(244,114,182,0.3)'};background:${type==='success'?'rgba(74,222,128,0.06)':'rgba(244,114,182,0.06)'};color:${type==='success'?'#4ade80':'#f472b6'};margin-top:.5rem`;
+  el.textContent = txt;
+  setTimeout(() => el.style.display = 'none', 6000);
 }
 
 // ── MUSIC ──
